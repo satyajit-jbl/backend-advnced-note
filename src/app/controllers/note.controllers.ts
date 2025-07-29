@@ -2,6 +2,7 @@ import express, { Request, Response }  from "express";
 import { Note } from "../models/notes.model";
 
 
+
 export const noteRoutes = express.Router();
 
 noteRoutes.post('/create-note', async (req: Request, res: Response) => {
@@ -16,6 +17,7 @@ noteRoutes.post('/create-note', async (req: Request, res: Response) => {
     // })
 
     // await myNote.save();
+    
 
     const note = await Note.create(body)
 
@@ -27,7 +29,11 @@ noteRoutes.post('/create-note', async (req: Request, res: Response) => {
 })
 noteRoutes.get('/', async (req: Request, res: Response) => {
 
-    const notes = await Note.find();
+    const notes = await Note.find().populate('user'); //populate userId from Note model=> userId(user): {
+        //     type: Schema.Types.ObjectId,
+        //     ref: "User", // from user model=> export const Users = model<IUser>("User", userSchema)
+        //     required: true
+        // }
 
     res.status(201).json({
         success: true,

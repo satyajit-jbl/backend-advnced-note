@@ -1,6 +1,7 @@
-import { model, Schema } from "mongoose";
-import { IAddress, IUser } from "../interfaces/user.interface";
+import { Model, model, Schema } from "mongoose";
+import { IAddress, IUser, UserInstanceMethods, UserStaticMethods } from "../interfaces/user.interface";
 import validator from "validator";
+import bcrypt from "bcryptjs";
 
 const addressSchema = new Schema<IAddress>({
     city: { type: String },
@@ -11,7 +12,7 @@ const addressSchema = new Schema<IAddress>({
     _id: false
 })
 
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema<IUser, UserStaticMethods, UserInstanceMethods>({
     firstName: {
         type: String,
         required: [true, "first Name required"],
@@ -65,4 +66,23 @@ const userSchema = new Schema<IUser>({
         }
 )
 
-export const User = model<IUser>("User", userSchema)
+userSchema.method("hashPassword", async function(plainPassword: string){
+    const password = await bcrypt.hash(plainPassword, 10)
+    console.log(password);
+
+    return password
+})
+userSchema.static("hashPassword", async function(plainPassword: string){
+    const password = await bcrypt.hash(plainPassword, 10)
+    console.log(password);
+    return password
+})
+userSchema.pre("save", async function(){
+    console.log("Inside pre save hook");
+    this.password = await bcrypt.hash(this.password, 10)
+    console.log(this);
+})
+userSchema.post('save', function(doc) {
+  console.log('%s has been deleted', doc._id);
+})
+export const User = model<IUser, UserStaticMethods>("User", userSchema)
